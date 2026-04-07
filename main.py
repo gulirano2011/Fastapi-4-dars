@@ -1,42 +1,26 @@
-# 1️⃣ FastAPI kutubxonasini chaqiramiz
 from fastapi import FastAPI
-from pydantic import BaseModel
+from typing import Optional
 
-# 2️⃣ FastAPI ilovasini yaratamiz
-app = FastAPI(
-    title="FastAPI Interaktiv API Hujjatlari",
-    description="Bu dastur Swagger UI (/docs) sahifasi orqali)"
-)
+app = FastAPI()
 
-# 3️⃣ Ma’lumot modelini yaratamiz (POST uchun)
-class Foydalanuvchi(BaseModel):
-    ism: str
-    yosh: int
+# Fake database
+users = [
+    {"id": 1, "name": "Ali", "age": 20},
+    {"id": 2, "name": "Vali", "age": 25},
+    {"id": 3, "name": "Sami", "age": 20},
+]
 
-# 4️⃣ GET so‘rov — oddiy salomlashuv
-@app.get("/")
-def read_root():
-    """
-    Asosiy sahifa.
-    Bu endpoint JSON formatda 'salom' so‘zini qaytaradi.
-    """
-    return {"salom": "FastAPI dunyosiga xush kelibsiz!"}
+# Path parameter
+@app.get("/users/{user_id}")
+def get_user(user_id: int):
+    for user in users:
+        if user["id"] == user_id:
+            return user
+    return {"error": "User not found"}
 
-# 5️⃣ GET so‘rov — parametr bilan ishlash
-@app.get("/salom/{ism}")
-def salom_ber(ism: str):
-    """
-    Foydalanuvchining ismini qabul qiladi va unga salom beradi.
-    """
-    return {"xabar": f"Salom, {ism}!"}
-
-# 6️⃣ POST so‘rov — ma’lumot yuborish
-@app.post("/foydalanuvchi/")
-def foydalanuvchi_qoshish(foydalanuvchi: Foydalanuvchi):
-    """
-    Yangi foydalanuvchi ma’lumotini qabul qilib, uni qaytaradi.
-    """
-    return {
-        "xabar": f"Foydalanuvchi qabul qilindi!",
-        "ma'lumot": foydalanuvchi
-    }
+# Query parameter (filter)
+@app.get("/users/")
+def get_users(age: Optional[int] = None):
+    if age:
+        return [user for user in users if user["age"] == age]
+    return users
